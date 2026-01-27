@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Upload successful</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body>
+        <div class="container">
+            <h3>File Uploaded Successfully</h3>
+            <p style="text-align: center;">The file is ready for analysis. Select the checks you want to perform:</p>
+            
+            <form action="/execution" method="post">
+                <ul class="rule-list">
+                    {% for rule in rules %}
+                       <li class="rule-item">
+                           <label class="rule-label">
+                               <input type="checkbox" name="selected_rules" value="{{ rule.rule_id }}" checked class="rule-checkbox">
+                               <div>
+                                   <span class="rule-id">{{ rule.rule_id }}:</span>
+                                   <span class="rule-desc">{{ rule.rule_description }}</span>
+                               </div>
+                           </label>
+                       </li>
+                    {% endfor %}
+                </ul>
+
+                <button type="submit">Generate Exception Report</button>
+            </form>
+        </div>
+
+        <!-- Chat Widget -->
+        <div id="chat-widget" class="chat-widget minimized">
+            <div class="chat-header" onclick="toggleChat()">
+                <span>AI Assistant</span>
+                <span id="chat-toggle-icon">▲</span>
+            </div>
+            <div class="chat-body" id="chat-body">
+                <div class="message ai">Hello! I can help you create custom rules for your data. Just describe what you're looking for.</div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Type a rule description..." onkeypress="handleKeyPress(event)">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+
+        <script src="{{ url_for('static', filename='chat.js') }}"></script>
+    </body>
+</html>

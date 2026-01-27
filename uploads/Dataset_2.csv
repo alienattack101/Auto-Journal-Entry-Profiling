@@ -1,0 +1,11 @@
+JE_Num,Date,Account,Description,Debit,Credit,Preparer,Approver
+1001,2025-10-01,1200,AR - Trade,5000.00,0.00,sarah_j,mike_r
+1001,2025-10-01,4000,Revenue,0.00,5000.00,sarah_j,mike_r
+1002,2025-10-04,6000,Office Expense,250.00,0.00,david_b,david_b
+1002,2025-10-04,2000,AP - Trade,0.00,250.00,david_b,david_b
+1003,2025-10-11,5000,Travel,1200.00,0.00,sarah_j,mike_r
+1003,2025-10-11,1000,Cash,0.00,1200.00,sarah_j,mike_r
+1004,2025-10-15,7000,Consulting,4500.00,0.00,jenny_l,tom_h
+1004,2025-10-15,2000,AP - Trade,0.00,4500.00,jenny_l,tom_h
+1005,2025-10-15,7000,Consulting,4500.00,0.00,jenny_l,tom_h
+1005,2025-10-15,2000,AP - Trade,0.00,4500.00,jenny_l,tom_h

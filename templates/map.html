@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <title>Map Headers</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h2>Map Your Data Headers</h2>
+        <p style="text-align: center;">Match the columns from your uploaded file to the required system fields.</p>
+
+        <form action="/map" method="POST">
+            <div class="mapping-grid">
+                {% for req_header in required_headers %}
+                <div class="mapping-item">
+                    <label for="{{ req_header }}_select">{{ req_header }}:</label>
+
+                    <select id="{{ req_header }}_select" name="{{ req_header }}_mapping" class="mapping-select" required>
+                        <option value="" disabled selected>-- Select Column --</option>
+
+                    {% for up_header in uploaded_headers %}
+                        <option value="{{ up_header }}">{{ up_header }}</option>
+                    {% endfor %}
+
+                    </select>            
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="submit-btn-container">
+                <button type="submit">Submit Mapping</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const selects = document.querySelectorAll('.mapping-select');
+            
+            function updateOptions() {
+                // Get all currently selected values
+                const selectedValues = Array.from(selects)
+                    .map(s => s.value)
+                    .filter(v => v !== "");
+
+                selects.forEach(select => {
+                    const currentVal = select.value;
+                    const options = select.querySelectorAll('option');
+                    
+                    options.forEach(option => {
+                        // Skip the placeholder option
+                        if (option.value === "") return;
+                        
+                        // If this option is selected in ANOTHER dropdown, disable it.
+                        // But keep it enabled if it's the value currently selected in THIS dropdown.
+                        if (selectedValues.includes(option.value) && option.value !== currentVal) {
+                            option.disabled = true;
+                            // Optional: add visual feedback style if desired
+                            // option.style.color = '#ccc'; 
+                        } else {
+                            option.disabled = false;
+                            // option.style.color = '';
+                        }
+                    });
+                });
+            }
+
+            // Attach event listener to all selects
+            selects.forEach(select => {
+                select.addEventListener('change', updateOptions);
+            });
+
+            // Initial run in case of browser auto-fill or back-button navigation
+            updateOptions();
+        });
+    </script>
+    </body>
+</html>
+

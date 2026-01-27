@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Flagged Entries</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body>
+        <div class="container">
+            <h3>JE Profiling Results</h3>
+            
+            {% for result in results %}
+                <div style="margin-bottom: 40px;">
+                    <h4>Rule ID: {{ result.id }}</h4>
+                    <div class="table-container">
+                        {% if result.table %}
+                            {{ result.table | safe }}
+                        {% else %}
+                            <p class="no-entries">No anomalies found for this rule.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+
+            <div style="margin-top: 30px;">
+                <a href="/" class="button">Go Home</a>
+            </div>
+        </div>
+
+        <!-- Chat Widget -->
+        <div id="chat-widget" class="chat-widget minimized">
+            <div class="chat-header" onclick="toggleChat()">
+                <span>AI Assistant</span>
+                <span id="chat-toggle-icon">▲</span>
+            </div>
+            <div class="chat-body" id="chat-body">
+                <div class="message ai">Hello! I can help you create custom rules for your data. Just describe what you're looking for.</div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Type a rule description..." onkeypress="handleKeyPress(event)">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+
+        <script src="{{ url_for('static', filename='chat.js') }}"></script>
+    </body>
+</html>

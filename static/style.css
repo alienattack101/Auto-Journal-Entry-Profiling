@@ -1,0 +1,336 @@
+:root {
+    --primary-color: #4a90e2;
+    --secondary-color: #f5f7fa;
+    --text-color: #333;
+    --border-color: #e1e4e8;
+    --success-color: #28a745;
+    --error-color: #dc3545;
+    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --chat-width: 350px;
+    --chat-header-height: 50px;
+}
+
+body {
+    font-family: var(--font-family);
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--secondary-color);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    width: 90%;
+    max-width: 800px;
+    background: white;
+    padding: 40px;
+    margin: 40px 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+h1, h2, h3, h4, h5 {
+    color: #2c3e50;
+    margin-top: 0;
+    text-align: center;
+}
+
+h3 {
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Forms and Inputs */
+form {
+    margin-top: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+input[type="file"],
+select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* Mapping Layout: Schema on Left, Input on Right */
+.mapping-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Vertical space between rows */
+}
+
+.mapping-item {
+    display: flex;
+    align-items: center; /* Vertically center label and input */
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.mapping-item:last-child {
+    border-bottom: none;
+}
+
+.mapping-item label {
+    flex: 1; /* Label takes up 1 part of space */
+    margin-bottom: 0; /* Remove default margin */
+    font-weight: 600;
+    color: #555;
+    margin-right: 20px;
+}
+
+.mapping-item select {
+    flex: 2; /* Select takes up 2 parts of space */
+    margin-bottom: 0; /* Remove default margin */
+    width: auto; /* Let flex control width */
+}
+
+/* Responsive adjustment for small screens */
+@media (max-width: 600px) {
+    .mapping-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .mapping-item label {
+        margin-bottom: 5px;
+        margin-right: 0;
+    }
+    
+    .mapping-item select {
+        width: 100%;
+    }
+}
+
+button {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    width: 100%;
+}
+
+/* Specific button style for mapping page */
+.submit-btn-container {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+}
+
+.submit-btn-container button {
+    width: auto;
+    min-width: 250px;
+}
+
+button:hover {
+    background-color: #357abd;
+}
+
+/* Checkbox List in successful.html */
+.rule-list {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.rule-item {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 10px;
+    transition: box-shadow 0.2s;
+}
+
+.rule-item:hover {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.rule-label {
+    display: flex;
+    align-items: flex-start;
+    cursor: pointer;
+    margin: 0;
+}
+
+.rule-checkbox {
+    margin-top: 4px;
+    margin-right: 12px;
+}
+
+.rule-id {
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-right: 8px;
+}
+
+/* Tables in results.html */
+.table-container {
+    overflow-x: auto;
+    margin-bottom: 30px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+table.table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+table.table th,
+table.table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+table.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+}
+
+table.table tr:last-child td {
+    border-bottom: none;
+}
+
+table.table tr:hover {
+    background-color: #f1f1f1;
+}
+
+.no-entries {
+    color: #6c757d;
+    font-style: italic;
+    padding: 10px 0;
+    text-align: center;
+}
+
+/* Flash Messages */
+.flash-messages {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    border: 1px solid #f5c6cb;
+    text-align: center;
+}
+
+/* --- Persistent Chatbox Styles --- */
+.chat-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: var(--chat-width);
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.chat-widget.minimized {
+    transform: translateY(calc(100% - var(--chat-header-height)));
+}
+
+.chat-header {
+    background: var(--primary-color);
+    color: white;
+    padding: 0 15px;
+    height: var(--chat-header-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.chat-body {
+    height: 400px;
+    padding: 15px;
+    overflow-y: auto;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.chat-input-area {
+    padding: 10px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 10px;
+    background: white;
+}
+
+.chat-input-area input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-bottom: 0;
+}
+
+.chat-input-area button {
+    width: auto;
+    padding: 8px 15px;
+    font-size: 14px;
+}
+
+.message {
+    max-width: 85%;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.message.user {
+    align-self: flex-end;
+    background: #dcf8c6; /* WhatsApp-like green */
+    border-bottom-right-radius: 2px;
+}
+
+.message.ai {
+    align-self: flex-start;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-bottom-left-radius: 2px;
+}
+
+.chat-controls button {
+    margin-top: 5px;
+    font-size: 12px;
+    padding: 5px 10px;
+    width: 100%;
+}

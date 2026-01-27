@@ -1,0 +1,11 @@
+Voucher_ID,Post_Date,GL_Code,Line_Item,Amount_Dr,Amount_Cr,User_Entry,User_Auth
+VCH_500,2025-11-03,5001,Salaries - Eng,10000.00,0.00,payroll_bot,controller
+VCH_500,2025-11-03,5002,Salaries - Sales,12000.00,0.00,payroll_bot,controller
+VCH_500,2025-11-03,5003,Salaries - Admin,5000.00,0.00,payroll_bot,controller
+VCH_500,2025-11-03,2050,Wages Payable,0.00,27000.00,payroll_bot,controller
+VCH_501,2025-11-05,6100,Rent Expense,2000.00,0.00,admin_01,mgr_01
+VCH_501,2025-11-05,1000,Cash,0.00,2000.00,admin_01,mgr_01
+VCH_502,2025-11-03,5001,Salaries - Eng,10000.00,0.00,payroll_bot,controller
+VCH_502,2025-11-03,5002,Salaries - Sales,12000.00,0.00,payroll_bot,controller
+VCH_502,2025-11-03,5003,Salaries - Admin,5000.00,0.00,payroll_bot,controller
+VCH_502,2025-11-03,2050,Wages Payable,0.00,27000.00,payroll_bot,controller
