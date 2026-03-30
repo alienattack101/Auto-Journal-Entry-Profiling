@@ -1,4 +1,5 @@
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 import os
 import json
 from dotenv import load_dotenv
@@ -12,8 +13,8 @@ if not GOOGLE_API_KEY:
     print("Error: GEMINI_API_KEY not found in environment variables.")
     exit(1)
 
-genai.configure(api_key=GOOGLE_API_KEY)
-model = genai.GenerativeModel('gemini-2.0-flash')
+client = genai.Client(api_key=GOOGLE_API_KEY)
+MODEL_ID = 'gemini-2.0-flash'
 
 SYSTEM_INSTRUCTION = """
 You are an expert SQL developer assisting with Journal Entry (JE) analysis.
@@ -41,13 +42,13 @@ Ensure the rule_id is unique and descriptive.
 Do not include markdown formatting or explanations outside the JSON.
 """
 
-def get_ai_response(chat_session, prompt):
+def get_ai_response(chat, prompt):
     """
     Sends a prompt to the chat session and returns the parsed JSON object.
     """
     try:
         print("\nWaiting for Gemini...")
-        response = chat_session.send_message(prompt)
+        response = chat.send_message(prompt)
         generated_text = response.text
         
         # Cleanup potential markdown code blocks
@@ -99,10 +100,13 @@ def main():
     
     while True:
         # Start a new chat session for each new rule request to reset context
-        chat = model.start_chat(history=[
-            {"role": "user", "parts": SYSTEM_INSTRUCTION},
-            {"role": "model", "parts": "Understood. I am ready to generate SQL rules for the JE_Table based on your requests. Please provide the rule description."}
-        ])
+        chat = client.chats.create(
+            model=MODEL_ID,
+            history=[
+                types.Content(role="user", parts=[types.Part(text=SYSTEM_INSTRUCTION)]),
+                types.Content(role="model", parts=[types.Part(text="Understood. I am ready to generate SQL rules for the JE_Table based on your requests. Please provide the rule description.")])
+            ]
+        )
 
         # Initial rule request
         prompt = input("\nEnter your rule description (or 'q' to quit): ").strip()

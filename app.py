@@ -4,7 +4,8 @@ import pandas as pd
 import sqlite3
 import os
 import io
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 from rules import JE_RULES
 
@@ -18,10 +19,10 @@ ALLOWED_EXTENSIONS = {'csv'}
 # Gemini Configuration
 GOOGLE_API_KEY = os.getenv('GEMINI_API_KEY')
 if GOOGLE_API_KEY:
-    genai.configure(api_key=GOOGLE_API_KEY)
-    model = genai.GenerativeModel('gemini-2.0-flash')
+    client = genai.Client(api_key=GOOGLE_API_KEY)
+    MODEL_ID = 'gemini-2.0-flash'
 else:
-    model = None
+    client = None
     print("Warning: GEMINI_API_KEY not found in environment variables.")
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -108,7 +109,9 @@ def map_headers():
 
             session['mapped_file'] = mapped_filename
 
-            return render_template('successful.html', rules = JE_RULES)
+            # Combine standard rules with any existing session rules
+            current_rules = JE_RULES + session.get('session_rules', [])
+            return render_template('successful.html', rules=current_rules)
             # return "File uploaded and validated successfully"
     else:
          return render_template('map.html', uploaded_headers=headers, required_headers=REQUIRED_HEADERS)     
@@ -140,25 +143,28 @@ def execution():
 
      # Combine standard rules with session-based custom rules
      session_rules = session.get('session_rules', [])
-     
+      
      # Create a combined list of all potential rules
      all_potential_rules = JE_RULES + session_rules
-
+     print(f"DEBUG: All potential rules: {[r['rule_id'] for r in all_potential_rules]}")
+     print(f"DEBUG: Selected rules: {selected_rules}")
+ 
      #cursor = conn.cursor()
      # Loop through rules and execute only selected ones
      for rule in all_potential_rules:
          rule_id = rule["rule_id"]
-         
+          
          # Skip if rule was not selected
          if selected_rules and rule_id not in selected_rules:
+             print(f"DEBUG: Skipping rule {rule_id} (not selected)")
              continue
-             
+              
          sql_query = rule["sql"]
-         #print(f"DEBUG: Executing rule {rule_id}")
-
+         print(f"DEBUG: Executing rule {rule_id}")
+ 
          try:
             flagged_entries = pd.read_sql(sql_query, conn)
-            #print(f"DEBUG: Rule {rule_id} executed. Rows found: {len(flagged_entries)}")
+            print(f"DEBUG: Rule {rule_id} executed. Rows found: {len(flagged_entries)}")
 
             if not flagged_entries.empty:
                table_html = flagged_entries.to_html(classes='table', index=False)
@@ -174,7 +180,7 @@ def execution():
             })
      
          except Exception as e:
-               #print(f"DEBUG: Error in rule {rule_id}: {e}")
+               print(f"DEBUG: Error in rule {rule_id}: {e}")
                results.append({
                     "id": rule_id,
                     "count": 0,
@@ -187,7 +193,7 @@ def execution():
 
 @app.route('/chat_generate_rule', methods=['POST'])
 def chat_generate_rule():
-    if not model:
+    if not client:
         return jsonify({'error': 'Gemini API not configured'}), 503
 
     user_input = request.json.get('prompt')
@@ -195,8 +201,15 @@ def chat_generate_rule():
         return jsonify({'error': 'No prompt provided'}), 400
     
     # Retrieve chat history from session, or initialize if empty
-    chat_history = session.get('chat_history', [])
+    chat_history_dicts = session.get('chat_history', [])
     
+    # Reconstruct history as Content objects for the SDK
+    history = []
+    for msg in chat_history_dicts:
+        # Create Content objects. Note: SDK v2 uses 'parts' with 'text'
+        parts = [types.Part(text=part_text) for part_text in msg.get('parts', [])]
+        history.append(types.Content(role=msg.get('role'), parts=parts))
+
     # Context for Gemini about the table structure and goal
     system_instruction = """
     You are an expert SQL developer assisting with Journal Entry (JE) analysis.
@@ -211,7 +224,7 @@ def chat_generate_rule():
     
     Your task is to generate a SQL query based on the user's request to identify anomalies or specific patterns in the journal entries.
     
-    IMPORTANT: The query MUST select ALL columns from JE_Table for the flagged records, not just the ID. 
+    IMPORTANT: The query MUST select ALL columns from JE_Table for the flagged records, not just the ID.
     Use `SELECT *` or `SELECT jt.*` (if aliasing) to ensure the full context is returned.
     
     If the user asks for a modification (e.g., "change the limit to 5000"), modify the PREVIOUS rule and return the updated JSON.
@@ -226,26 +239,16 @@ def chat_generate_rule():
     Do not include markdown formatting or explanations outside the JSON.
     """
     
-    # Construct the full prompt history for this turn
-    # Since we can't easily serialize ChatSession, we'll rebuild the history list
-    # The SDK expects history as a list of Content objects, but we can pass a list of dicts to start_chat or just append to prompt
-    # A simple way for stateless HTTP is to append new user input to history and send it all.
-    # However, Gemini's `start_chat` with `history` is cleaner.
-    
-    # We need to ensure the system instruction is always the context.
-    # Let's map our session history (simple list of dicts) to the format Gemini expects if needed,
-    # or just keep it simple: System Prompt + History + New Prompt.
-    
     try:
-        # Initialize chat with history
-        chat = model.start_chat(history=chat_history)
-        
-        # If history is empty, send system instruction first (hidden from user)
-        if not chat_history:
-             chat.send_message(system_instruction)
-             # We don't save this system message to the user-visible session history necessarily,
-             # but `chat.history` will track it. 
-             # To persist efficiently, we'll grab the history from `chat.history` after the turn.
+        # If history is empty, send system instruction first (as the first message in history)
+        if not history:
+             # Add system instruction as user message (common pattern if system role not explicitly supported in same way,
+             # but with google-genai client we can often use config or just preload history)
+             # Let's just add it as the first context piece.
+             history.append(types.Content(role="user", parts=[types.Part(text=system_instruction)]))
+             history.append(types.Content(role="model", parts=[types.Part(text="Understood. I'm ready to help with JE analysis SQL queries.")]))
+
+        chat = client.chats.create(model=MODEL_ID, history=history)
 
         response = chat.send_message(user_input)
         generated_text = response.text
@@ -254,18 +257,27 @@ def chat_generate_rule():
         clean_text = generated_text.replace('```json', '').replace('```', '').strip()
         
         # Update session history
-        # Convert google.ai.generativelanguage.Content objects to serializable dicts
-        new_history = []
-        for msg in chat.history:
-            # Skip the system instruction if we want, or keep it. 
-            # Storing it is safer for context retention.
-            # msg.parts is a list of Part objects, msg.role is string
-            new_history.append({
-                'role': msg.role,
-                'parts': [part.text for part in msg.parts]
-            })
-            
-        session['chat_history'] = new_history
+        # We need to manually reconstruct what we want to save because chat.history might be complex objects
+        # We'll just append the new turn to our simple dict list for next time
+        
+        # Append the new user input
+        chat_history_dicts.append({
+            'role': 'user',
+            'parts': [user_input]
+        })
+        # Append the model response
+        chat_history_dicts.append({
+             'role': 'model',
+             'parts': [generated_text]
+        })
+
+        # If we started fresh, we should also save the system instruction turn so context isn't lost
+        if len(chat_history_dicts) == 2: # Just added user+model, but we had system+ack before
+             # We should prepend the system instruction interaction we did implicitly
+             chat_history_dicts.insert(0, {'role': 'model', 'parts': ["Understood. I'm ready to help with JE analysis SQL queries."]})
+             chat_history_dicts.insert(0, {'role': 'user', 'parts': [system_instruction]})
+             
+        session['chat_history'] = chat_history_dicts
         session.modified = True
         
         try:

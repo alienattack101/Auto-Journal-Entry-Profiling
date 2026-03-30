@@ -153,10 +153,49 @@ async function approveRule(ruleObj, cardElement) {
             cardElement.innerHTML = `✅ <b>Rule Approved!</b><br>ID: ${ruleObj.rule_id}<br>It will be included in the next run.`;
             cardElement.style.borderColor = '#28a745';
             cardElement.style.backgroundColor = '#d4edda';
+            addRuleToForm(ruleObj);
         } else {
             alert('Error saving rule: ' + data.error);
         }
     } catch (e) {
         alert('Network error approving rule');
     }
+}
+
+function addRuleToForm(ruleObj) {
+    const ruleList = document.querySelector('.rule-list');
+    if (!ruleList) return;
+
+    const li = document.createElement('li');
+    li.className = 'rule-item';
+
+    const label = document.createElement('label');
+    label.className = 'rule-label';
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.name = 'selected_rules';
+    checkbox.value = ruleObj.rule_id;
+    checkbox.checked = true;
+    checkbox.className = 'rule-checkbox';
+
+    const div = document.createElement('div');
+    
+    const spanId = document.createElement('span');
+    spanId.className = 'rule-id';
+    spanId.textContent = ruleObj.rule_id + ':';
+    
+    const spanDesc = document.createElement('span');
+    spanDesc.className = 'rule-desc';
+    spanDesc.textContent = ruleObj.rule_description;
+
+    div.appendChild(spanId);
+    div.appendChild(document.createTextNode(' '));
+    div.appendChild(spanDesc);
+
+    label.appendChild(checkbox);
+    label.appendChild(div);
+    li.appendChild(label);
+    
+    ruleList.appendChild(li);
 }
