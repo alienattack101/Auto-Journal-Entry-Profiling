@@ -1,9 +1,6 @@
 flask
-
 pandas
-
 google-genai
-
 python-dotenv
-
 gunicorn
+
